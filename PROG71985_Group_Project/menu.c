@@ -2,17 +2,23 @@
 #include <stdio.h>
 
 void startmenu() {
-	printf("\nWelcome to our To-Do List Program\n\n");		//print start menu for users to see their options
-	printf("a) add a task\n");
-	printf("b) delete an existing task\n");
-	printf("c) update an existing task\n");
-	printf("d) display a task\n");
-	printf("e) display a range of tasks\n");
-	printf("f) display all tasks\n");
-	printf("g) search for task\n");
-	printf("h) quit\n");
 
+
+	printf("========================================\n");
+	printf("   Welcome to our To-Do List Program\n");			//print start menu for users to see their options
+	printf("========================================\n\n");
+	printf("Please select an option:\n\n");
+	printf("  a) Add a task\n");
+	printf("  b) Delete an existing task\n");
+	printf("  c) Update an existing task\n");
+	printf("  d) Display a task\n");
+	printf("  e) Display a range of tasks\n");
+	printf("  f) Display all tasks\n");
+	printf("  g) Search for a task\n");
+	printf("  i) Set a notification for a task\n");
+	printf("  h) Quit\n\n");
 }
+
 char get_selection() {
 	char selection;
 	printf("Please enter your selection:\n");

@@ -19,53 +19,75 @@
 11. you may add additional features, increasing your group’s overall
 mark to a maximum of 100%.
 */
+#include "task.h" // Make sure this includes the definition of TASK and any new notification-related functions
+
+// Assuming you have a MAX_NUM_TASKS defined somewhere
+#define MAX_NUM_TASKS 100
+
+// Prototype for functions not shown here
+void load_data(TASK tasks[], int* task_count);
+void startmenu(void);
+char get_selection(void);
+void add_task(TASK tasks[], int* task_count);
+void delete_task(TASK tasks[], int* task_count);
+void edit_task(TASK tasks[]);
+void display_single_task(TASK tasks[]);
+void display_ranged_tasks(TASK tasks[], int task_count);
+void display_all_tasks(TASK tasks[], int task_count);
+void search_task(TASK tasks[], int task_count);
+void save_data(TASK tasks[], int task_count);
+void check_and_display_notifications(TASK tasks[], int task_count); 
 
 int main(void) {
-    TASK tasks[MAX_NUM_TASKS];                                      //init TASK struct called tasks
-    int task_count = 0;                                             //init task count to 0
-    char selection;                                                 //declare var to hold users selection
+    TASK tasks[MAX_NUM_TASKS];                                      // Init TASK struct called tasks
+    int task_count = 0;                                             // Init task count to 0
+    char selection;                                                 // Declare var to hold user's selection
 
-    load_data(tasks, &task_count);                                  //load tasks, task count from file
+    load_data(tasks, &task_count);                                  // Load tasks, task count from file
 
     do {
         startmenu();
+        check_and_display_notifications(tasks, task_count);         // Check and display notifications
         selection = get_selection();
 
         switch (selection) {
         case 'a':
-            add_task(tasks, &task_count);                           //add task, pass tasks array and task_count pointer
+            add_task(tasks, &task_count);
             break;
         case 'b':
-            delete_task(tasks, &task_count);                        //delete task, pass tasks array and task_count pointer
+            delete_task(tasks, &task_count);
             break;
         case 'c':
-            edit_task(tasks);                                       // edit task pass tasks array
+            edit_task(tasks);
             break;
         case 'd':
-            display_single_task(tasks);                             //display a task pass tasks array
+            display_single_task(tasks);
             break;
         case 'e':
-            display_ranged_tasks(tasks, task_count);                //display range of tasks pass tasks array and task_count
+            display_ranged_tasks(tasks, task_count);
             break;
         case 'f':
-            display_all_tasks(tasks, task_count);                   //display all tasks, pass tasks array and task_count
+            display_all_tasks(tasks, task_count);
             break;
         case 'g':
-            search_task(tasks, task_count);                         //seach for task, pass tasks array and task_count
+            search_task(tasks, task_count);
             break;
-        case 'h':                                                                       
-            printf("Thank you for visiting our To-Do List Program. See you soon!\n");   //exit program with message
+        case 'h':
+            set_task_notification(tasks, &task_count); 
             break;
+        case 'i':
+            printf("Thank you for visiting our To-Do List Program. See you soon!\n");
+            break;
+       ;
         default:
-            printf("Selection entered was invalid, please try again!\n");   
+            printf("Selection entered was invalid, please try again!\n");
             break;
         }
 
-        save_data(tasks, task_count);                               //save tasks to file
+        save_data(tasks, task_count);                               // Save tasks to file
 
-    } while (selection != 'h');                                     //loop until user decides to exit program
+    } while (selection != 'h');                                     // Loop until user decides to exit program
 
     return 0;
 }
-
 

@@ -2,43 +2,67 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "task.h"
+#include <time.h>
 
 #define FILENAME "todo_data.txt"
 #define MAX_SEARCH 100
 
-void save_data(TASK tasks[], int task_count) {                          //save to file function
-    FILE* fp = fopen(FILENAME, "w");                                    //open file in write mode, file pointer as fp
-    if (fp == NULL) {                                                   //if fp NULL, exit with error message
+
+void save_data(TASK tasks[], int task_count) {      //save to file function
+    FILE* fp = fopen(FILENAME, "w");                //open file in write mode, file pointer as fp
+    if (fp == NULL) {                               //if fp NULL, exit with error message
         fprintf(stderr, "Error opening file for writing\n");
         return;
     }
-    fwrite(tasks, sizeof(TASK), task_count, fp);                        //write data of tasks to file
-    fclose(fp);                                                         //close file
+    for (int i = 0; i < task_count; i++) {
+       
+        const char* timeToWrite = (tasks[i].notificationTime[0] != '\0') ? tasks[i].notificationTime : "-";  //write data of tasks to file
+        fprintf(fp, "%d,%s,%s\n", tasks[i].task_number, tasks[i].description, timeToWrite);                  
+    }
+    fclose(fp);                                                                                               //close file  
 }
 
-void load_data(TASK tasks[], int* task_count) {                         //load file function
-    FILE* fp = fopen(FILENAME, "r");                                    //open file in read mode, file pointer as fp
-    if (fp == NULL) {                                                   //if fp NNULL, exit with error message
+
+void load_data(TASK tasks[], int* task_count) {                           //load file function
+    
+    FILE* fp = fopen(FILENAME, "r");                                     //open file in read mode, file pointer as fp  
+    if (fp == NULL) {                                                    //if fp NNULL, exit with error message
         fprintf(stderr, "Error opening file for reading\n");
         return;
     }
-    *task_count = fread(tasks, sizeof(TASK), MAX_NUM_TASKS, fp);        //read data store in task count ptr
-    fclose(fp);                                                         //close file
+    char timeBuffer[10];
+    *task_count = 0;
+    while (fscanf(fp, "%d,%[^,],%9s\n", &tasks[*task_count].task_number, tasks[*task_count].description, timeBuffer) == 3) {
+        if (strcmp(timeBuffer, "-") != 0) { 
+            strcpy(tasks[*task_count].notificationTime, timeBuffer); 
+        }
+        else {
+            tasks[*task_count].notificationTime[0] = '\0'; 
+        }
+        (*task_count)++;
+        if (*task_count >= MAX_NUM_TASKS) break;
+    }
+    fclose(fp);                     //close file
 }
 
+
 void add_task(TASK tasks[], int* task_count) {
-    if (*task_count >= MAX_NUM_TASKS) {                                 //if task count exceeds max tasks, exit with message
-        printf("Maximum number of tasks reached, please delete a task if you want to add another one\n");
+    if (*task_count >= MAX_NUM_TASKS) {                                  //if task count exceeds max tasks, exit with message
+        printf("Maximum number of tasks reached. Please delete a task if you want to add another one.\n");
         return;
     }
-    TASK new_task;                                                      //new TASK struct to store new_task
-    new_task.task_number = (*task_count) + 1;                           //task number of new task is the current task count + 1
-    printf("Please enter the description of your task\n");              //prompt user to enter in description for task
-    scanf(" %[^\n]", new_task.description);                             //store in new task description
-    tasks[*task_count] = new_task;                                      //add new_task to tasks struct
-    (*task_count)++;                                                    //increment task count by 1
-    printf("Task added\n");
+    TASK new_task;                                                      // New TASK struct to store the new task
+    new_task.task_number = (*task_count) + 1;                           // Set the task number for the new task
+    printf("Please enter the description of your task:\n");             // Prompt the user to enter the description for the task
+    scanf(" %[^\n]", new_task.description);                             // Store the new task's description
+    new_task.notificationTime[0] = '\0';                               
+    tasks[*task_count] = new_task;                                      // Add the new task to the array of tasks
+    (*task_count)++;                                                    // Increment the task count by 1
+
+    // Print a confirmation message with the task number
+    printf("Task #%d added.\n", new_task.task_number);
 }
+
 
 void delete_task(TASK tasks[], int* task_count) {
     int task_num_del;                                                           //declare var to hold task number to delete
@@ -89,6 +113,12 @@ void display_single_task(TASK tasks[]) {
         if (tasks[i].task_number == task_num) {
             task_found = true;
             printf("Task #: %d\nTask Description: %s\n", tasks[i].task_number, tasks[i].description);   //print task number, task description of task
+            if (tasks[i].notificationTime[0] != '\0') {  // assuming an unset notificationTime starts with a null terminator
+                printf("Notification Time: %s\n", tasks[i].notificationTime);
+            }
+            else {
+                printf("No notification set for this task.\n");
+            }
             break;
         }
     }   
@@ -109,18 +139,31 @@ void display_ranged_tasks(TASK tasks[], int task_count) {
     }
     for (int i = task_start - 1; i < task_end; i++) {                               //for tasks within range, print task number, task description
         printf("Task #: %d, \nTask Description: %s\n", tasks[i].task_number, tasks[i].description);
+        if (tasks[i].notificationTime[0] != '\0') {                                 
+            printf("Notification Time: %s\n", tasks[i].notificationTime);           // Print the notification time
+        }
+        else {
+            printf("No notification set for this task.\n");                         // Inform the user if no notification is set
+        }
+        printf("\n");                                                               
     }
 }
-
-void display_all_tasks(TASK tasks[], int task_count) {                  
+void display_all_tasks(TASK tasks[], int task_count) {
     if (task_count == 0) {                                                          //if current task count is 0, no tasks, tell user
         printf("No available tasks to display\n");
         return;
     }
     for (int i = 0; i < task_count; i++) {                                          //for all current tasks, print task number, task description
         printf("Task #: %d, \nTask Description: %s\n", tasks[i].task_number, tasks[i].description);
+        if (tasks[i].notificationTime[0] != '\0') {                                 // Check if a notification time is set
+            printf("Notification Time: %s\n", tasks[i].notificationTime);
+        }
     }
+
 }
+      
+
+ 
 
 void search_task(TASK tasks[], int task_count) {
     char search[MAX_SEARCH];                                                        //declare var to hold keywords, with max input size MAX_SEARCH
@@ -136,5 +179,50 @@ void search_task(TASK tasks[], int task_count) {
     if (!task_found) {                                                              //if task not found, tell user
         printf("Task was not found\n");
     }
+}
+
+void check_and_display_notifications(TASK tasks[], int task_count) {
+    time_t now = time(NULL);                                                        // Obtain the current time
+    struct tm* now_tm = localtime(&now);
+    char current_time_str[20];
+    strftime(current_time_str, sizeof(current_time_str), "%H:%M", now_tm);
+
+    for (int i = 0; i < task_count; i++) {
+        if (strcmp(tasks[i].notificationTime, current_time_str) == 0) {
+            printf("Notification for task: %s\n", tasks[i].description);           // Display the notification message
+                                                          
+            strcpy(tasks[i].notificationTime, "");                                 // Reset notificationTime
+        }
+    }
+}
+
+
+
+void set_task_notification(TASK tasks[], int* task_count) {
+    int taskNumber, hours, minutes;
+    char notificationTime[20];
+    bool validTime = false;
+
+    printf("Enter the task number you want to set a notification for: ");
+    scanf("%d", &taskNumber);
+    while (getchar() != '\n');                                                                                                     // Clear the input buffer
+    int taskIndex = taskNumber - 1;                                                                                                // Adjust for zero-based index
+    if (taskIndex < 0 || taskIndex >= *task_count) {                                                                               // Check for valid the task number
+        printf("Invalid task number.\n");
+        return;
+    }
+    while (!validTime) {                                                                                                           // Loop until a valid time is entered
+        printf("Enter the notification time (HH:MM format): ");
+        if (scanf("%2d:%2d", &hours, &minutes) == 2 && hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
+            validTime = true;                                                                                                      // The entered time is valid, store the notification
+        }
+        else {
+            printf("Invalid time format. Please enter the time as HH:MM.\n");
+        }
+        while (getchar() != '\n');                                                                                                  // Clear the input buffer
+    }
+    snprintf(tasks[taskIndex].notificationTime, sizeof(tasks[taskIndex].notificationTime), "%02d:%02d", hours, minutes);
+
+    printf("Notification set for task %d at %s.\n", taskNumber, tasks[taskIndex].notificationTime);
 }
 
